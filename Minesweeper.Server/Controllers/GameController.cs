@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Minesweeper.Server.Entities;
 using Minesweeper.Server.Enums;
 using Minesweeper.Server.Requests;
 using Minesweeper.Server.Responses;
@@ -8,7 +7,7 @@ using Minesweeper.Server.Services;
 namespace Minesweeper.Server.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("game")]
 public class GameController
 {
     private readonly IGameService _gameService;
@@ -25,26 +24,6 @@ public class GameController
     {
         return _gameService.StartGame(fieldType);
     }
-
-    /*[HttpGet("field/{id:guid}/{x:int}/{y:int}")]
-    public Field GetField(Guid id, int x, int y)
-    {
-        return _gameService.GetField(id, new Position(x, y));
-    }
-
-    [HttpGet("fields/{id:guid}")]
-    public List<Field> GetFields(Guid id)
-    {
-        List<Field> fields = new List<Field>();
-        for (var i = 0; i < 9; i++)
-        {
-            for (var j = 0; j < 9; j++)
-            {
-                fields.Add(_gameService.GetField(id, new Position(i, j)));
-            }
-        }
-        return fields;
-    }*/
 
     [HttpPost("revealfield")]
     public RevealResponse RevealField(RevealRequest request)
@@ -64,6 +43,21 @@ public class GameController
         var clearedFields = _gameService.OnReveal(request.PlayFieldId, field);
         fieldClickType = RevealResult.Cleared;
         gameState = GameState.Continue;
+
+        if (_gameService.GetPlayField(request.PlayFieldId).ClearedCompleteField())
+        {
+            gameState = GameState.Win;
+            return new RevealResponse(fieldClickType, gameState, field.BombCount, clearedFields);
+        }
+        
         return new RevealResponse(fieldClickType, gameState, field.BombCount, clearedFields);
     }
+
+    [HttpGet("revealBombs/{id:guid}")]
+    public RevealBombsResponse RevealBombs(Guid id)
+    {
+        var field = _gameService.GetPlayField(id);
+        return new RevealBombsResponse(field.RevealBombs());
+    }
+
 }

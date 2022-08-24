@@ -24,6 +24,11 @@ public class GameService : IGameService
         return _playFieldRepository.GetField(id, position);
     }
 
+    public PlayField GetPlayField(Guid id)
+    {
+        return _playFieldRepository.GetPlayField(id);
+    }
+    
     public List<ClearedField>? OnReveal(Guid id, Field field)
     {
         return _playFieldRepository.OnClick(id, field);

@@ -39,7 +39,7 @@ public class PlayFieldRepository : IPlayFieldRepository
         return GetPlayField(id).OnClick(field);
     }
     
-    private PlayField GetPlayField(Guid id)
+    public PlayField GetPlayField(Guid id)
     {
         try
         {

@@ -5,7 +5,6 @@ namespace Minesweeper.Server.Entities;
 public class PlayField
 {
     private readonly Guid _id;
-    private readonly PlayFieldSize _playFieldType;
     private int _bombCount = 10;
     private int _size = 9;
     private int _tempBombCount;
@@ -13,7 +12,6 @@ public class PlayField
     public PlayField(Guid id, PlayFieldSize playFieldType)
     {
         _id = id;
-        _playFieldType = playFieldType;
         GenerateFields(playFieldType);
     }
 
@@ -26,13 +24,30 @@ public class PlayField
         return _id;
     }
 
+    private List<ClearedField> _clearedFields;
+
     public List<ClearedField>? OnClick(Field field)
     {
         field.Visible = true;
-        return FindAllFields(field);
+        _clearedFields = new();
+        FindAllFields(field);
+        return _clearedFields;
     }
 
-    private List<ClearedField>? FindAllFields(Field currentField)
+    public bool ClearedCompleteField()
+    {
+        foreach (var (key, value) in Fields)
+        {
+            if (!value.Visible && !value.Bomb)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void FindAllFields(Field currentField)
     {
         var x = currentField.Position.X;
         var y = currentField.Position.Y;
@@ -42,11 +57,10 @@ public class PlayField
             currentField.BombCount != 0
         )
         {
-            return null;
+            return;
         }
 
         EmptyFields.Add(currentField);
-        List<ClearedField> clearedFields = new();
 
         var topY = y - 1;
         if (topY >= 0 && topY < _size)
@@ -58,14 +72,14 @@ public class PlayField
                 if (!field.Bomb)
                 {
                     field.Visible = true;
-                    clearedFields.Add(new ClearedField(pos, 0));
+                    _clearedFields.Add(new ClearedField(pos, 0));
                     FindAllFields(field);
                 }
             }
             else
             {
                 field.Visible = true;
-                clearedFields.Add(new ClearedField(pos, field.BombCount));
+                _clearedFields.Add(new ClearedField(pos, field.BombCount));
             }
         }
 
@@ -79,60 +93,58 @@ public class PlayField
                 if (!field.Bomb)
                 {
                     field.Visible = true;
-                    clearedFields.Add(new ClearedField(pos, 0));
+                    _clearedFields.Add(new ClearedField(pos, 0));
                     FindAllFields(field);
                 }
             }
             else
             {
                 field.Visible = true;
-                clearedFields.Add(new ClearedField(pos, field.BombCount));
+                _clearedFields.Add(new ClearedField(pos, field.BombCount));
             }
         }
 
         var leftX = x - 1;
         if (leftX >= 0 && leftX < _size)
         {
-            var pos = new Position(x, leftX);
+            var pos = new Position(leftX, y);
             var field = Fields[pos];
             if (field.BombCount == 0)
             {
                 if (!field.Bomb)
                 {
                     field.Visible = true;
-                    clearedFields.Add(new ClearedField(pos, 0));
+                    _clearedFields.Add(new ClearedField(pos, 0));
                     FindAllFields(field);
                 }
             }
             else
             {
                 field.Visible = true;
-                clearedFields.Add(new ClearedField(pos, field.BombCount));
+                _clearedFields.Add(new ClearedField(pos, field.BombCount));
             }
         }
 
         var rightX = x + 1;
         if (rightX >= 0 && rightX < _size)
         {
-            var pos = new Position(x, rightX);
+            var pos = new Position(rightX, y);
             var field = Fields[pos];
             if (field.BombCount == 0)
             {
                 if (!field.Bomb)
                 {
                     field.Visible = true;
-                    clearedFields.Add(new ClearedField(pos, 0));
+                    _clearedFields.Add(new ClearedField(pos, 0));
                     FindAllFields(field);
                 }
             }
             else
             {
                 field.Visible = true;
-                clearedFields.Add(new ClearedField(pos, field.BombCount));
+                _clearedFields.Add(new ClearedField(pos, field.BombCount));
             }
         }
-
-        return clearedFields;
     }
 
     private void GenerateFields(PlayFieldSize playFieldType)
@@ -144,7 +156,7 @@ public class PlayField
         {
             case PlayFieldSize.Small:
             {
-                bombCount = 10;
+                bombCount = 2;
                 size = 9;
                 break;
             }
@@ -234,6 +246,19 @@ public class PlayField
                 }
             }
         }
+    }
+
+    public List<Position> RevealBombs()
+    {
+        List<Position> positions = new();
+
+        ShowAllBombs();
+        foreach (var field in Bombs)
+        {
+            positions.Add(field.Position);
+        }
+
+        return positions;
     }
 
     private void ShowAllBombs()

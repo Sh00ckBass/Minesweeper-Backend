@@ -14,14 +14,5 @@ public class Field
     public bool Visible { get; set; }
 
     public int BombCount { get; set; }
-
-    public bool IsCleared()
-    {
-        return !Bomb && Visible;
-    }
-
-    public bool IsExploded()
-    {
-        return Bomb && Visible;
-    }
+    
 }
