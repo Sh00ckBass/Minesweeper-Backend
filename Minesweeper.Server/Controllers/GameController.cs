@@ -11,9 +11,9 @@ namespace Minesweeper.Server.Controllers;
 public class GameController
 {
     private readonly IGameService _gameService;
-    private readonly ILogger<WeatherForecastController> _logger;
+    private readonly ILogger<GameController> _logger;
 
-    public GameController(ILogger<WeatherForecastController> logger, IGameService gameService)
+    public GameController(ILogger<GameController> logger, IGameService gameService)
     {
         _logger = logger;
         _gameService = gameService;
@@ -28,29 +28,7 @@ public class GameController
     [HttpPost("revealfield")]
     public RevealResponse RevealField(RevealRequest request)
     {
-        var field = _gameService.GetField(request.PlayFieldId, request.Position);
-        RevealResult fieldClickType;
-        GameState gameState;
-
-        if (field.Bomb)
-        {
-            field.Visible = true;
-            fieldClickType = RevealResult.Bomb;
-            gameState = GameState.GameOver;
-            return new RevealResponse(fieldClickType, gameState);
-        }
-
-        var clearedFields = _gameService.OnReveal(request.PlayFieldId, field);
-        fieldClickType = RevealResult.Cleared;
-        gameState = GameState.Continue;
-
-        if (_gameService.GetPlayField(request.PlayFieldId).ClearedCompleteField())
-        {
-            gameState = GameState.Win;
-            return new RevealResponse(fieldClickType, gameState, field.BombCount, clearedFields);
-        }
-        
-        return new RevealResponse(fieldClickType, gameState, field.BombCount, clearedFields);
+        return _gameService.RevealField(request);
     }
 
     [HttpGet("revealBombs/{id:guid}")]

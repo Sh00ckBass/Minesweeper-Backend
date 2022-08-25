@@ -10,18 +10,22 @@ public class RevealResponse
 
     public int? BombCount { get; set; }
     public List<ClearedField>? ClearedFields { get; set; }
+    
+    public Position? Position { get; set; }
 
-    public RevealResponse(RevealResult revealResult, GameState gameState)
+    public RevealResponse(RevealResult revealResult, GameState gameState, Position? position)
     {
         RevealResult = revealResult;
         GameState = gameState;
+        Position = position;
     }
     
-    public RevealResponse(RevealResult revealResult, GameState gameState, int? bombCount, List<ClearedField>? clearedFields)
+    public RevealResponse(RevealResult revealResult, GameState gameState, int? bombCount, List<ClearedField>? clearedFields, Position? position)
     {
         RevealResult = revealResult;
         GameState = gameState;
         BombCount = bombCount;
         ClearedFields = clearedFields;
+        Position = position;
     }
 }

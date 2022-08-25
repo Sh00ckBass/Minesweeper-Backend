@@ -156,7 +156,7 @@ public class PlayField
         {
             case PlayFieldSize.Small:
             {
-                bombCount = 2;
+                bombCount = 10;
                 size = 9;
                 break;
             }
