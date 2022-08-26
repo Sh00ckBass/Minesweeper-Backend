@@ -8,12 +8,11 @@ namespace Minesweeper.Server.Services;
 public interface IGameService
 {
     Guid StartGame(PlayFieldSize fieldType);
+    PlayField GetPlayFieldMongo(Guid id);
 
-    Field GetField(Guid id, Position position);
+    RevealBombsResponse RevealBombs(PlayField field);
     
-    PlayField GetPlayField(Guid id);
-
-    List<ClearedField>? OnReveal(Guid id, Field field);
-
     RevealResponse RevealField(RevealRequest request);
+
+    GetSavedPlayFieldResponse GetSavedPlayField(Guid playFieldId);
 }

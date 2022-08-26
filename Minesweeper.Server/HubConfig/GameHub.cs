@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Minesweeper.Server.Enums;
 using Minesweeper.Server.Requests;
-using Minesweeper.Server.Responses;
 using Minesweeper.Server.Services;
 
 namespace Minesweeper.Server.HubConfig;
@@ -16,11 +15,14 @@ public class GameHub : Hub
     }
 
     public async Task StartGame(PlayFieldSize fieldType) =>
-        await Clients.All.SendAsync("startGame", _gameService.StartGame(fieldType));
+        await Clients.Client(Context.ConnectionId).SendAsync("startGame", _gameService.StartGame(fieldType));
 
     public async Task RevealField(RevealRequest request) =>
-        await Clients.All.SendAsync("revealField", _gameService.RevealField(request));
+        await Clients.Client(Context.ConnectionId).SendAsync("revealField", _gameService.RevealField(request));
 
-    public async Task RevealBombs(Guid id) => 
-        await Clients.All.SendAsync("revealBombs", new RevealBombsResponse(_gameService.GetPlayField(id).RevealBombs()));
+    public async Task RevealBombs(Guid id) =>
+        await Clients.Client(Context.ConnectionId).SendAsync("revealBombs", _gameService.RevealBombs(_gameService.GetPlayFieldMongo(id)));
+
+    public async Task GetPlayField(Guid id) =>
+        await Clients.Client(Context.ConnectionId).SendAsync("getPlayField", _gameService.GetSavedPlayField(id));
 }

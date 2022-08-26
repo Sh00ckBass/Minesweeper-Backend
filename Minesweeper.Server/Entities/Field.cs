@@ -7,7 +7,7 @@ public class Field
         Position = position;
     }
 
-    public Position Position { get; }
+    public Position Position { get; set; }
 
     public bool Bomb { get; set; }
 

@@ -1,32 +1,32 @@
 ﻿using Minesweeper.Server.Entities;
 using Minesweeper.Server.Enums;
 using Minesweeper.Server.Exceptions;
-using Swashbuckle.AspNetCore.Swagger;
+using MongoDB.Driver;
 
 namespace Minesweeper.Server.repository;
 
 public class PlayFieldRepository : IPlayFieldRepository
 {
-    public PlayFieldRepository()
-    {
-        PlayFields = new Dictionary<Guid, PlayField>();
-    }
+    private readonly IMongoCollection<PlayField> _playFieldCollection;
 
-    private Dictionary<Guid, PlayField> PlayFields { get; }
+    public PlayFieldRepository(IMongoCollection<PlayField> playFieldCollection)
+    {
+        _playFieldCollection = playFieldCollection;
+    }
 
     public Guid SetupField(PlayFieldSize playFieldType)
     {
         var id = Guid.NewGuid();
         var field = new PlayField(id, playFieldType);
-        PlayFields.Add(id, field);
+        _playFieldCollection.InsertOne(field);
         return id;
     }
 
-    public Field GetField(Guid id, Position position)
+    public Field GetField(PlayField playField, Position position)
     {
         try
         {
-            return GetPlayField(id).Fields[position];
+            return playField.GetField(position);
         }
         catch (KeyNotFoundException)
         {
@@ -34,20 +34,25 @@ public class PlayFieldRepository : IPlayFieldRepository
         }
     }
 
-    public List<ClearedField>? OnClick(Guid id, Field field)
+    public List<ClearedField> OnClick(PlayField playField, Field field)
     {
-        return GetPlayField(id).OnClick(field);
+        return playField.OnClick(field);
     }
-    
-    public PlayField GetPlayField(Guid id)
+
+    public PlayField GetPlayFieldMongo(Guid id)
     {
         try
         {
-            return PlayFields[id];
+            return _playFieldCollection.AsQueryable().First(pf => pf.Id.Equals(id));
         }
         catch (KeyNotFoundException)
         {
             throw new UnknownPlayFieldException();
         }
+    }
+
+    public void UpdatePlayField(PlayField playField)
+    {
+        _playFieldCollection.ReplaceOne(Builders<PlayField>.Filter.Eq(pf => pf.Id, playField.Id), playField);
     }
 }

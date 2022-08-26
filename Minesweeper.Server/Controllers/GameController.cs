@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Minesweeper.Server.Entities;
 using Minesweeper.Server.Enums;
 using Minesweeper.Server.Requests;
 using Minesweeper.Server.Responses;
@@ -34,8 +35,13 @@ public class GameController
     [HttpGet("revealBombs/{id:guid}")]
     public RevealBombsResponse RevealBombs(Guid id)
     {
-        var field = _gameService.GetPlayField(id);
-        return new RevealBombsResponse(field.RevealBombs());
+        var field = _gameService.GetPlayFieldMongo(id);
+        return _gameService.RevealBombs(field);
     }
 
-}
+    [HttpGet("playField/{id:guid}")]
+    public GetSavedPlayFieldResponse GetPlayField(Guid id)
+    {
+        return _gameService.GetSavedPlayField(id);
+    }
+}   
